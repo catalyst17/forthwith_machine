@@ -166,3 +166,23 @@ native "or", or
 	or rdx, rax
 	push rax
 	jmp next
+	
+	
+; return stack commands
+
+; drop the top of the dstack and place it to the rstack
+native ">r", push_to_r
+	pop rax
+	rpush rax
+	jmp next
+
+; drop the top of the rstack and place it to the dstack
+native "r>", pop_from_r
+	rpop rax
+	push rax
+	jmp next
+
+; copy the top of the rstack and place it to the dstack
+native "r@", fetch_r
+	push qword[rstack]
+	jmp next
