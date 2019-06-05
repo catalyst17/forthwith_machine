@@ -105,3 +105,45 @@ native ">", greater
 .greater:
 	push 1
 	jmp next
+
+	
+; logic
+
+; ( a -- a' )
+; if a == 0 then a' = 1
+; if a != 0 then a' = 0
+native "not", not
+	pop rax
+    test rax, rax
+    setz al			;sets the byte to 1 if zero-flag, otherwise to 0
+    movzx rax, al
+    push rax	
+	jmp next
+
+; ( a b -- a||b )
+native "lor", lor
+	pop rax
+	pop rdx
+	test rax, rax
+	jnz .true
+	test rdx, rdx
+	jnz .true
+	push 0
+	jmp next
+.true:
+	push 1
+	jmp next
+
+; ( a b -- a&&b )
+native "land", land
+	pop rax
+	pop rdx
+	test rax, rax
+	jz .false
+	test rdx, rdx
+	jz .false
+	push 1
+	jmp next
+.false:
+	push 0
+	jmp next
