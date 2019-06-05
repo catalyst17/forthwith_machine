@@ -147,3 +147,22 @@ native "land", land
 .false:
 	push 0
 	jmp next
+	
+	
+; bitwise
+
+; ( a b -- a&b )
+native "and", and
+	pop rax
+	pop rdx
+	and rdx, rax
+	push rax
+	jmp next
+
+; ( a b -- a|b )
+native "or", or
+	pop rax
+	pop rdx
+	or rdx, rax
+	push rax
+	jmp next
