@@ -30,7 +30,8 @@ _start:
 	mov [stack_start], rsp
 
 	mov pc, forth_init ;TODO not realized yet
-
+	
+; inner interpreter loop
 next:
 	mov w, pc
 	add pc, 8

@@ -300,4 +300,3 @@ native "syscall", syscall
 native "forth-stack-restore", forth_stack_restore
   mov rsp, [stack_start]
   jmp next
-
