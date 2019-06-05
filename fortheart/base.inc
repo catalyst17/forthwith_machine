@@ -244,7 +244,7 @@ native "branch", branch
 	jmp next
 
 ; jump to a location (absolute address) if TOS == 0
-native "0branch", branch0
+native "0branch", branch0		; zero in the beginning cause in the end of word naming there will be null pointer
 	pop rax
 	test rax,rax
 	jnz .skip

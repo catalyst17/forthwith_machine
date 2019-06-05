@@ -8,6 +8,7 @@ global _start
 section .text
 
 %include "base.inc"
+%include "outer_interpreter.inc"
 
 section .bss
 
@@ -29,7 +30,7 @@ _start:
 	mov rstack, rstack_start
 	mov [stack_start], rsp
 
-	mov pc, forth_init ;TODO not realized yet
+	mov pc, forth_init
 	
 ; inner interpreter loop
 next:
