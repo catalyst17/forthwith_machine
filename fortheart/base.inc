@@ -19,3 +19,45 @@ native "swap", swap
 native "dup", dup
 	push qword[rsp]
 	jmp next
+	
+
+; ariphmetic
+
+; sums two top values on the stack and put the result on top
+; ( b a -- [a+b] )
+native "+", plus
+	pop rax
+	add [rsp], rax
+	jmp next
+
+; ( b a -- [a*b] )
+native "*", mul
+	pop rax
+	mul qword[rsp]
+	pop rdx
+	push rax
+	jmp next
+
+; ( b a -- [a div b] )
+native "/", div
+	pop rcx		; b
+	pop rax		; a
+	cqo 		; copies sign bit of rax into every bit of rdx
+	div rcx		; a div b
+	push rax
+	jmp next
+
+; ( b a -- [a mod b] )
+native "%", mod
+	pop rcx
+	pop rax
+	cqo
+	div rcx
+	push rdx
+	jmp next
+
+; ( b a -- [a - b] )
+native "-", sub
+	pop rax
+	sub [rsp], rax
+	jmp next
