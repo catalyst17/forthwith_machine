@@ -227,3 +227,34 @@ native "execute", execute
 native "forth-dp", forth_dp
 	push dp
 	jmp next
+	
+
+; maintaining the execution
+
+; command to prepare for the colon word execution
+native "docol", docol
+	rpush pc
+	add w, 8
+	mov pc, w
+	jmp next
+
+; jump to a location (absolute address)
+native "branch", branch
+	mov pc, [pc]
+	jmp next
+
+; jump to a location (absolute address) if TOS == 0
+native "0branch", branch0
+	pop rax
+	test rax,rax
+	jnz .skip
+	mov pc, [pc]
+	jmp next
+.skip:
+	add pc, 8
+	jmp next
+
+; command to exit the colon word defining
+native "exit", exit
+	rpop pc
+	jmp next
