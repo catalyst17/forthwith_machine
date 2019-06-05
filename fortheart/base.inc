@@ -61,3 +61,47 @@ native "-", sub
 	pop rax
 	sub [rsp], rax
 	jmp next
+	
+; comparison
+	
+; ( b a -- c )
+; if a == b then c = 1
+; if a != b then c = 0
+native "=", equal
+	pop rax
+	pop rdx
+	cmp rax, rdx
+	je .equals
+	push 0
+	jmp next
+.equals:
+	push 1
+	jmp next
+	
+; ( b a -- c )
+; if a < b then c = 1
+; if a >= b then c = 0
+native "<", less
+	pop rdx
+	pop rax
+	cmp rax, rdx
+	jl .less
+	push 0
+	jmp next
+.less:
+	push 1
+	jmp next
+
+; ( b a -- c )
+; if a > b then c = 1
+; if a <= b then c = 0
+native ">", greater
+	pop rdx
+	pop rax
+	cmp rax, rdx
+	jg .greater
+	push 0
+	jmp next
+.greater:
+	push 1
+	jmp next
