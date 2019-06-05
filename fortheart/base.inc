@@ -24,13 +24,13 @@ native "dup", dup
 ; ariphmetic
 
 ; sums two top values on the stack and put the result on top
-; ( b a -- [a+b] )
+; (a b -- [a+b] )
 native "+", plus
 	pop rax
 	add [rsp], rax
 	jmp next
 
-; ( b a -- [a*b] )
+; ( a b -- [a*b] )
 native "*", mul
 	pop rax
 	mul qword[rsp]
@@ -38,7 +38,7 @@ native "*", mul
 	push rax
 	jmp next
 
-; ( b a -- [a div b] )
+; ( a b -- [a div b] )
 native "/", div
 	pop rcx		; b
 	pop rax		; a
@@ -47,7 +47,7 @@ native "/", div
 	push rax
 	jmp next
 
-; ( b a -- [a mod b] )
+; ( a b -- [a mod b] )
 native "%", mod
 	pop rcx
 	pop rax
@@ -56,7 +56,7 @@ native "%", mod
 	push rdx
 	jmp next
 
-; ( b a -- [a - b] )
+; ( a b -- [a - b] )
 native "-", sub
 	pop rax
 	sub [rsp], rax
@@ -64,7 +64,7 @@ native "-", sub
 	
 ; comparison
 	
-; ( b a -- c )
+; ( a b -- c )
 ; if a == b then c = 1
 ; if a != b then c = 0
 native "=", equal
@@ -78,7 +78,7 @@ native "=", equal
 	push 1
 	jmp next
 	
-; ( b a -- c )
+; ( a b -- c )
 ; if a < b then c = 1
 ; if a >= b then c = 0
 native "<", less
@@ -92,7 +92,7 @@ native "<", less
 	push 1
 	jmp next
 
-; ( b a -- c )
+; ( a b -- c )
 ; if a > b then c = 1
 ; if a <= b then c = 0
 native ">", greater
@@ -120,7 +120,7 @@ native "not", not
     push rax	
 	jmp next
 
-; ( a b -- a||b )
+; ( b a -- a||b )
 native "lor", lor
 	pop rax
 	pop rdx
@@ -134,7 +134,7 @@ native "lor", lor
 	push 1
 	jmp next
 
-; ( a b -- a&&b )
+; ( b a -- a&&b )
 native "land", land
 	pop rax
 	pop rdx
@@ -185,4 +185,45 @@ native "r>", pop_from_r
 ; copy the top of the rstack and place it to the dstack
 native "r@", fetch_r
 	push qword[rstack]
+	jmp next
+	
+
+; memory
+
+; ( addr -- value )
+native "@", fetch
+	pop rax
+	push qword[rax]
+	jmp next
+
+; ( val addr -- )
+native "!", store
+	pop rax			; addr
+	pop rdx			; val
+	mov [rax], rdx
+	jmp next
+
+; ( char addr -- )
+native "c!", store_char
+	pop rdx			; addr
+	pop rax			; char
+	mov [rdx], al
+	jmp next
+
+; ( addr -- char )
+native "c@", fetch_char
+	pop rax
+	movzx rax,  byte[rax]
+	push rax
+	jmp next
+
+; execute word word, execution token of which is on TOS
+; ( xt -- )	
+native "execute", execute
+	pop rax
+	mov w, rax
+	jmp [rax]
+
+native "forth-dp", forth_dp
+	push dp
 	jmp next
