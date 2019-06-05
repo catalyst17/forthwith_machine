@@ -277,3 +277,27 @@ native "forth-sp", forth_sp
 native "forth-stack-base", forth_stack_base
 	push qword[stack_start]
 	jmp next
+	
+
+; executes syscall
+; the following registers store arguments (relatively to its order)
+; rdi , rsi , rdx , r10 , r8 and r9
+; ( call_num a1 a2 a3 a4 a5 a6 -- new_rax new_rdx )
+native "syscall", syscall
+	pop r9
+	pop r8
+	pop r10
+	pop rdx
+	pop rsi
+	pop rdi
+	pop rax
+	syscall
+	push rax
+	push rdx
+	jmp next
+
+; restore forth's stack to its initial state	
+native "forth-stack-restore", forth_stack_restore
+  mov rsp, [stack_start]
+  jmp next
+
