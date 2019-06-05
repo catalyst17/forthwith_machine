@@ -258,3 +258,22 @@ native "0branch", branch0
 native "exit", exit
 	rpop pc
 	jmp next
+	
+	
+; service
+
+; pushes a value immediately following this XT
+native "lit", lit
+	push qword[pc]
+	add pc, 8
+	jmp next
+
+; places pointer to the stack on TOS
+native "forth-sp", forth_sp
+	push rsp
+	jmp next
+
+; places pointer to the stack_base on TOS
+native "forth-stack-base", forth_stack_base
+	push qword[stack_start]
+	jmp next
