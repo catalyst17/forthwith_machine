@@ -324,8 +324,9 @@ colon ".", dot
 	dq xt_pop_from_r
 	dq xt_lit, 8, xt_plus
 	dq xt_push_to_r
+	dq xt_drop
 .exit:
-	dq xt_pop_from_r, xt_drop, xt_drop, xt_exit
+	dq xt_pop_from_r, xt_drop, xt_exit
 	
 
 

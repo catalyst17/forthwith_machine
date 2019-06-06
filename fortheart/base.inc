@@ -155,7 +155,7 @@ native "land", land
 native "and", and
 	pop rax
 	pop rdx
-	and rdx, rax
+	and rax, rdx
 	push rax
 	jmp next
 
@@ -163,7 +163,7 @@ native "and", and
 native "or", or
 	pop rax
 	pop rdx
-	or rdx, rax
+	or rax, rdx
 	push rax
 	jmp next
 	
