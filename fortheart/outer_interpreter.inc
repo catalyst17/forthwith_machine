@@ -280,6 +280,9 @@ colon "forth-interpret-fd", forth_interpret_fd
 .eof:
     dq xt_pop_from_r, xt_fd, xt_store, xt_exit
 
+; implementation of a word that will be executed on SIGSEGV
+colon "trap", trap
+    dq xt_lit, wh_trap + 9, xt_print_string, xt_print_cr, xt_exit	
 
 ; initialize forth machine
 forth_init:
