@@ -25,10 +25,79 @@ const "forth-stack-start", stack_start
 %define sys_read_no 0
 %define sys_write_no 1
 
+; preparing for write system call and, explicitly, the call itself
+colon "sys-write", sys_write
+	TIMES 3 dq xt_push_to_r
+	dq xt_lit, sys_write_no
+	TIMES 3 dq xt_pop_from_r
+	TIMES 3 dq xt_lit, 0
+	dq xt_syscall , xt_drop, xt_exit
+	
+; prepare cell on the stack for sym
+colon  "stack-cell", stack_cell
+  dq xt_lit, 0, xt_forth_sp, xt_exit
+
+; preparing for read system call and, explicitly, the call itself
+colon "sys-read", sys_read
+	TIMES 3 dq xt_push_to_r
+	dq xt_lit, sys_read_no
+	TIMES 3 dq xt_pop_from_r
+	TIMES 3 dq xt_lit, 0
+	dq xt_syscall , xt_drop, xt_exit
+
+; read char 
+; ( fd - char 1) or ( - 0 )
+colon "file-read-char", file_read_char
+	dq xt_push_to_r, xt_stack_cell, xt_pop_from_r, xt_swap, xt_lit, 1, xt_sys_read
+	branch0 .fail
+	dq xt_lit, 1
+.fail :
+	dq xt_exit
+
+; checks whether the char is space symbol	
+colon "char-is-space", char_is_space
+  dq xt_push_to_r
+  dq xt_fetch_r, xt_lit,  ' ', xt_equal
+  dq xt_fetch_r, xt_lit, 10, xt_equal, xt_lor
+  dq xt_fetch_r, xt_lit, 13, xt_equal, xt_lor
+  dq xt_pop_from_r,  xt_lit, '\t', xt_equal, xt_lor, xt_exit
+  
+; null-terminates the read string
+colon "string-terminate", string_terminate
+  dq xt_lit, 0, xt_swap, xt_store_char, xt_exit
+
 ; read word to buffer
 ; ( fd buffer -- )
 colon "file-read-word", file_read_word
   dq xt_dup, xt_push_to_r, xt_push_to_r
+  
+.read_space:
+  dq xt_dup, xt_file_read_char
+  branch0 .eof
+
+  dq xt_dup, xt_char_is_space
+  branch0 .commit
+
+  dq xt_drop
+  branch .read_space
+
+.read:
+  dq xt_dup, xt_file_read_char
+  branch0 .eof
+
+  dq xt_dup, xt_char_is_space, xt_not
+  branch0 .end
+
+.commit:
+  dq xt_fetch_r, xt_store_char
+  dq xt_pop_from_r, xt_inc, xt_push_to_r
+  branch .read
+
+.end:
+  dq xt_drop
+.eof:
+  dq xt_drop, xt_fetch_r, xt_string_terminate
+  dq xt_pop_from_r, xt_pop_from_r, xt_sub, xt_exit
 
 ; makes TOS negative
 colon "neg", neg
@@ -167,18 +236,6 @@ colon "c,", char_comma
   dq xt_here, xt_fetch, xt_store_char
   dq xt_here, xt_fetch, xt_inc
   dq xt_here, xt_store, xt_exit
-
-; preparing for write system call and, explicitly, the call itself
-colon "sys-write", sys_write
-	TIMES 3 dq xt_push_to_r
-	dq xt_lit, sys_write_no
-	TIMES 3 dq xt_pop_from_r
-	TIMES 3 dq xt_lit, 0
-	dq xt_syscall , xt_drop, xt_exit
-	
-; prepare cell on the stack for sym
-colon  "stack-cell", stack_cell
-  dq xt_lit, 0, xt_forth_sp, xt_exit
 	
 ; write char to output corresponding to the fd
 ; ( fd char -- )
