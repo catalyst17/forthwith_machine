@@ -245,19 +245,28 @@ colon "file-write-char", file_write_char
   dq xt_stack_cell, xt_dup, xt_pop_from_r, xt_swap, xt_store_char
   dq xt_pop_from_r, xt_swap, xt_lit, 1, xt_sys_write, xt_drop, xt_drop, xt_exit
   
+; write char to std output
+; ( char -- )
+colon "print-char", print_char
+	dq xt_lit, 1, xt_swap, xt_file_write_char, xt_exit
+
+; transforms digit to char by simply adding the code of zero 
+colon "digit-to-char", digit_to_char
+	dq xt_lit, 0x30, xt_plus, xt_exit
+  
 ; prints carriage return (starts new line)
 colon "print-cr", print_cr
-  dq xt_lit, 1, xt_lit, 10, xt_file_write_char, xt_exit
+	dq xt_lit, 1, xt_lit, 10, xt_file_write_char, xt_exit
 
 ; outputs string of count syms
 ; ( str count -- )
 colon "print-string-counted", print_string_counted
-  dq xt_push_to_r, xt_push_to_r, xt_lit, 1, xt_pop_from_r, xt_pop_from_r, xt_sys_write, xt_drop, xt_exit
+	dq xt_push_to_r, xt_push_to_r, xt_lit, 1, xt_pop_from_r, xt_pop_from_r, xt_sys_write, xt_drop, xt_exit
   
 ; outputs the string
 ; ( str -- )
 colon "print-string", print_string
-  dq xt_dup, xt_string_length, xt_print_string_counted, xt_exit
+	dq xt_dup, xt_string_length, xt_print_string_counted, xt_exit
 
 
 ; commands for initializing forth and for the interpretation process  
