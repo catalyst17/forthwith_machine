@@ -133,11 +133,26 @@ colon "string-equals", string_equals
 .no:
   dq xt_drop, xt_drop, xt_lit, 0, xt_exit
 
+; copies string from src to dest
+; ( dest src -- )
+colon "string-copy", string_copy
+.loop:
+	dq xt_ddup, xt_fetch_char, xt_push_to_r, xt_fetch_r, xt_swap, xt_store_char
+	dq xt_dinc, xt_pop_from_r, xt_not
+	branch0 .loop
+	dq xt_drop, xt_drop, xt_exit  
+
 ; save addr of new word in user_dict and prepare to a next word
 colon ",", comma
   dq xt_here, xt_fetch, xt_store
   dq xt_here, xt_fetch, xt_lit, 8, xt_plus
-  dq xt_here, xt_store, xt_exit 
+  dq xt_here, xt_store, xt_exit
+  
+; save addr of new char in user_dict and prepare to a next one
+colon "c,", char_comma
+  dq xt_here, xt_fetch, xt_store_char
+  dq xt_here, xt_fetch, xt_inc
+  dq xt_here, xt_store, xt_exit
 
 ; preparing for write system call and, explicitly, the call itself
 colon "sys-write", sys_write
@@ -174,6 +189,18 @@ colon "print-string", print_string
 
 
 ; commands for initializing forth and for the interpretation process  
+
+; creates an entry in the dictionary, where name is the new name
+; ( flags name - )
+colon "forth-create", forth_create
+  dq xt_here, xt_fetch                	; word start
+  dq xt_last_word, xt_fetch, xt_comma 	; fill `link` to prev
+  dq xt_last_word, xt_store           	; update `last_word`
+  dq xt_lit, 0, xt_char_comma
+  dq xt_dup, xt_here, xt_fetch, xt_swap, xt_string_copy
+  dq xt_string_length, xt_here, xt_fetch, xt_plus, xt_inc, xt_here, xt_store
+  dq xt_char_comma
+  dq xt_exit
 
 ; adds word to dictionary (increments the dict length)
 colon "forth-dict-word-name", forth_dict_word_name
