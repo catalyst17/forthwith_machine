@@ -268,6 +268,46 @@ colon "print-string-counted", print_string_counted
 colon "print-string", print_string
 	dq xt_dup, xt_string_length, xt_print_string_counted, xt_exit
 
+; prints digits, converting them to chars beforehand	
+colon "print-uint", print_uint
+	dq xt_push_to_r
+	dq xt_forth_sp
+	dq xt_pop_from_r, xt_swap
+	dq xt_push_to_r, xt_push_to_r
+.loop:
+	dq xt_fetch_r
+   	dq xt_lit, 10, xt_mod
+	dq xt_pop_from_r
+	dq xt_lit, 10, xt_div
+	dq xt_dup
+	branch0 .print
+	dq xt_push_to_r
+	branch .loop
+.print:
+	dq xt_drop
+.print_loop:
+	dq xt_forth_sp, xt_fetch_r, xt_less
+	branch0 .exit
+	dq xt_digit_to_char, xt_print_char
+	branch .print_loop
+.exit:
+	dq xt_pop_from_r, xt_drop, xt_exit
+	
+; prints stack's contents
+colon ".S", show_stack_s
+	dq xt_forth_sp
+	dq xt_push_to_r
+.loop:
+	dq xt_fetch_r, xt_forth_stack_base, xt_less
+	branch0 .exit
+	dq xt_fetch_r, xt_fetch, xt_print_uint, xt_print_cr
+	dq xt_pop_from_r
+	dq xt_lit, 8, xt_plus
+	dq xt_push_to_r
+	branch .loop
+.exit:
+	dq xt_pop_from_r, xt_drop, xt_exit
+
 
 ; commands for initializing forth and for the interpretation process  
 
