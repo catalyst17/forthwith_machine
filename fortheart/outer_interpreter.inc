@@ -142,6 +142,20 @@ colon "string-copy", string_copy
 	branch0 .loop
 	dq xt_drop, xt_drop, xt_exit  
 
+; allows to define new colon words within the forthwith machine!
+colon ":", colon
+.restart:
+	dq xt_fd, xt_fetch, xt_lit, word_buf, xt_file_read_word
+	branch0 .restart
+	dq xt_lit, 0, xt_lit, word_buf, xt_forth_create
+	dq xt_lit, STATE_COMPILE, xt_state, xt_store
+	dq xt_lit, i_docol, xt_comma, xt_exit	
+
+; exits the compile mode, i.e. finishes colon word definition
+colon ";", semicolon, 1
+    dq xt_lit, STATE_INTERPRET, xt_state, xt_store
+    dq xt_lit, xt_exit, xt_comma, xt_exit
+
 ; save addr of new word in user_dict and prepare to a next word
 colon ",", comma
   dq xt_here, xt_fetch, xt_store
