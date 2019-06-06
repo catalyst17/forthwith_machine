@@ -230,6 +230,22 @@ colon "forth-find-word", forth_find_word
 .not_found:
   dq xt_pop_from_r, xt_drop, xt_exit
 
+; reads word to place its XT address on the stack (immediate one!)
+colon "'", forth_tick, 1
+  dq xt_fd, xt_fetch, xt_lit, word_buf, xt_file_read_word
+  branch0 .eof
+  dq xt_lit, word_buf, xt_forth_find_word
+  branch0 .no_word
+  dq xt_forth_cfa, xt_state
+  branch0 .interp
+  dq xt_lit, xt_lit, xt_comma, xt_comma
+.interp:
+  dq xt_exit
+.no_word:
+  dq xt_lit, msg.no_such_word, xt_print_string, xt_print_string, xt_print_cr, xt_exit
+  .eof:
+  dq xt_drop, xt_exit  
+  
 ; converts word header start address to the execution token
 ; ( word_addr -- xt )
 colon "forth-cfa", forth_cfa
