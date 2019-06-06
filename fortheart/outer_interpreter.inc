@@ -307,6 +307,12 @@ colon ".S", show_stack_s
 	branch .loop
 .exit:
 	dq xt_pop_from_r, xt_drop, xt_exit
+	
+; stops the forthwith machine
+colon "bye", bye
+	dq xt_lit, 60
+	TIMES 6 dq xt_lit, 0
+	dq xt_syscall
 
 
 ; commands for initializing forth and for the interpretation process  
