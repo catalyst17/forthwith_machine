@@ -1,3 +1,7 @@
+section .rodata
+msg:
+  .no_such_word: db "! No such word: ", 0
+
 section .bss
 word_buf:  resq 512
 user_dict:  resq 65536
@@ -15,6 +19,11 @@ const "forth-last-word", last_word
 const "forth-is-compiling", state
 const "forth-input-fd", fd
 const "forth-stack-start", stack_start
+
+; IO & parsing utils for strings, chars and numbers
+
+%define sys_read_no 0
+%define sys_write_no 1
 
 ; read word to buffer
 ; ( fd buffer -- )
@@ -130,6 +139,42 @@ colon ",", comma
   dq xt_here, xt_fetch, xt_lit, 8, xt_plus
   dq xt_here, xt_store, xt_exit 
 
+; preparing for write system call and, explicitly, the call itself
+colon "sys-write", sys_write
+	TIMES 3 dq xt_push_to_r
+	dq xt_lit, sys_write_no
+	TIMES 3 dq xt_pop_from_r
+	TIMES 3 dq xt_lit, 0
+	dq xt_syscall , xt_drop, xt_exit
+	
+; prepare cell on the stack for sym
+colon  "stack-cell", stack_cell
+  dq xt_lit, 0, xt_forth_sp, xt_exit
+	
+; write char to output corresponding to the fd
+; ( fd char -- )
+colon "file-write-char", file_write_char
+  dq xt_swap, xt_push_to_r, xt_push_to_r
+  dq xt_stack_cell, xt_dup, xt_pop_from_r, xt_swap, xt_store_char
+  dq xt_pop_from_r, xt_swap, xt_lit, 1, xt_sys_write, xt_drop, xt_drop, xt_exit
+  
+; prints carriage return (starts new line)
+colon "print-cr", print_cr
+  dq xt_lit, 1, xt_lit, 10, xt_file_write_char, xt_exit
+
+; outputs string of count syms
+; ( str count -- )
+colon "print-string-counted", print_string_counted
+  dq xt_push_to_r, xt_push_to_r, xt_lit, 1, xt_pop_from_r, xt_pop_from_r, xt_sys_write, xt_drop, xt_exit
+  
+; outputs the string
+; ( str -- )
+colon "print-string", print_string
+  dq xt_dup, xt_string_length, xt_print_string_counted, xt_exit
+
+
+; commands for initializing forth and for the interpretation process  
+
 ; adds word to dictionary (increments the dict length)
 colon "forth-dict-word-name", forth_dict_word_name
   dq xt_lit, 9, xt_plus, xt_exit
@@ -168,6 +213,12 @@ colon "forth-cfa", forth_cfa
 ; checks if interpreted word is immediate
 colon "forth-xt-is-immediate", forth_xt_is_immediate
     dq xt_lit, 1, xt_sub, xt_fetch_char, xt_exit
+	
+; checks the presence of branch commands before the current one
+colon "forth-follows-branch", forth_follows_branch
+    dq xt_here, xt_fetch, xt_lit, 8, xt_sub, xt_fetch
+    dq xt_dup, xt_lit, xt_branch0, xt_equal, xt_swap
+    dq xt_lit, xt_branch, xt_equal, xt_lor, xt_exit
   
 ; ( str -- )
 ; accepts word and tries to interpret it as a command, special command or a number
@@ -193,25 +244,25 @@ colon "forth-interpret", forth_interpret
     dq xt_dup, xt_string_parse_number		; input is number?
     branch0 .no_word
 
-    dq xt_swap, xt_drop						; if number
-    dq xt_state, xt_fetch					; if interpreting, that's it
-    branch0 .exit
+    dq xt_swap, xt_drop						; number ?
+    dq xt_state, xt_fetch					
+    branch0 .exit							; interpretation state? then finish it
 
     dq xt_forth_follows_branch, xt_not
     branch0 .is_branch
 
 .not_branch:
     dq xt_lit, xt_lit, xt_comma
-.is_branch: ; ( num prev_xt )
+.is_branch:									; if there was branch jump before => finishing
     dq xt_comma, xt_exit
 
-.no_word: ; ( inbuf )
+.no_word:									; if there is no such word => output error message
   dq xt_lit, msg.no_such_word, xt_print_string, xt_print_string, xt_print_cr
 
 .exit:
     dq xt_exit
 
-
+	
 ; command to read  words from an open fd and interprets them using "forth-interpret"
 ; ( fd -- )
 colon "forth-interpret-fd", forth_interpret_fd
