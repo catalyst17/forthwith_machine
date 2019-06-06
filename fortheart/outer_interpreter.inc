@@ -313,6 +313,20 @@ colon "bye", bye
 	dq xt_lit, 60
 	TIMES 6 dq xt_lit, 0
 	dq xt_syscall
+	
+; prints TOS and drops it
+colon ".", dot
+	dq xt_forth_sp
+	dq xt_push_to_r
+	dq xt_fetch_r, xt_forth_stack_base, xt_less
+	branch0 .exit
+	dq xt_fetch_r, xt_fetch, xt_print_uint, xt_print_cr
+	dq xt_pop_from_r
+	dq xt_lit, 8, xt_plus
+	dq xt_push_to_r
+.exit:
+	dq xt_pop_from_r, xt_drop, xt_drop, xt_exit
+	
 
 
 ; commands for initializing forth and for the interpretation process  
