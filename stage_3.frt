@@ -16,3 +16,32 @@
 : if ' 0branch , here 0  , ; IMMEDIATE
 : else ' branch , here 0 , swap here swap !  ; IMMEDIATE
 : then here swap ! ; IMMEDIATE
+
+: for 
+      ' swap ,
+      ' >r , ( storing iterator and ... )
+      ' >r , ( ... loop limit in rstack in order not to lose them )
+( checking if limit's been reached )
+here  ' r> , 
+      ' r> , 
+      ' 2dup , 
+      ' >r , 
+      ' >r , 
+      ' < ,  
+      ' 0branch ,  
+	  here 0 , ( jump to "endfor" code, finishing loop )
+swap ; IMMEDIATE
+
+: endfor
+      ' r> ,            ( popping iterator from rstack ... )
+      ' lit , 1 ,       ( ... incrementing ... )
+      ' + ,             ( ... it ... )
+      ' >r ,            ( ... and pushing back )
+      ' branch ,    	( continue loop, going back to "for" code )
+( complete the loop and drop auxiliary variables )
+, here swap !
+      ' r> ,
+      ' drop ,
+      ' r> ,
+      ' drop ,
+; IMMEDIATE
