@@ -4,3 +4,5 @@ Forthwith_machine is a Forth interpreter, written as a part of the coursework by
 
 Almost all code represents the 2nd stage of the coursework.
 The 3rd stage is represented in `stage_3.frt`.
+
+Poryadin Arseny, P3210, ITMO University.
