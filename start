@@ -1,1 +1,1 @@
-./bin/forthwith_machine
+cat stage_3.frt - | ./bin/forthwith_machine
